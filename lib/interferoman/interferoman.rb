@@ -9,15 +9,19 @@ module Interferoman
     # Before starting a game, this method will be called to inform the player of all the possible words that may be
     # played.
     def word_list=(list)
-      raise 'reset' unless @list.nil?
-      @list = list.map{|w| w.downcase}
+      @list = {}
+
+      list.each do |word|
+        current_list = (@list[word.length] ||= [])
+        current_list << word
+      end
     end
 
     # a new game has started.  The number of guesses the player has left is passed in (default 6),
     # in case you want to keep track of it.
     def new_game(guesses_left)
       @letters = ('a'..'z').to_a
-      @current_game_list = @list.dup
+      @current_game_list = nil
     end
 
     # Each turn your player must make a guess.  The word will be a bunch of underscores, one for each letter in the word.
@@ -25,9 +29,13 @@ module Interferoman
     # the word parameter would be "s___s", if you then guess 'o', the next turn it would be "s_o_s", and so on.
     # guesses_left is how many guesses you have left before your player is hung.
     def guess(word, guesses_left)
-      rstring = word.tr('_', '.')
-      regex = Regexp.new("^#{rstring}$")
-      @current_game_list.delete_if{|word| !regex.match(word)}
+      if @current_game_list.nil?
+        @current_game_list = @list[word.length].dup
+      else
+        rstring = word.tr('_', '.')
+        regex = Regexp.new("^#{rstring}$")
+        @current_game_list.delete_if{|word| !regex.match(word)}
+      end
 
       counts = [0]*26
 
