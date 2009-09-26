@@ -45,3 +45,12 @@ task :submit do
   submitter = HangmanTournament::Submit.new(PKG_NAME)
   submitter.submit
 end
+
+namespace :interferoman do
+  desc "Generate an Rcov report"
+  Spec::Rake::SpecTask.new('rcov') do |t|
+    t.spec_files = FileList['spec/**/*.rb']
+    t.rcov = true
+    t.rcov_opts = ['-t', '--exclude', 'spec,rcov']
+  end
+end
