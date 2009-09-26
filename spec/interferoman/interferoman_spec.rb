@@ -8,6 +8,34 @@ describe Interferoman::Interferoman do
     end
   end
 
+  describe :new_game do
+    it 'initializes @remaining_letters to the full alphabet' do
+      subject.instance_variable_set('@remaining_letters', nil)
+
+      subject.new_game(6)
+
+      subject.instance_variable_get('@remaining_letters').should == ('a'..'z').to_a
+    end
+
+    it 'initializes @current_game_list to nil' do
+      subject.instance_variable_set('@current_game_list', 'not nil')
+
+      subject.new_game(6)
+
+      subject.instance_variable_get('@current_game_list').should be_nil
+    end
+
+    it 'initializes @guesses_left to value passed' do
+      subject.instance_variable_set('@guesses_left', nil)
+
+      subject.new_game(6)
+      subject.instance_variable_get('@guesses_left').should == 6
+
+      subject.new_game(10)
+      subject.instance_variable_get('@guesses_left').should == 10
+    end
+  end
+
   describe :word_list= do
     it 'divides the words into sub-lists by word length' do
       subject.word_list = %w{a b cd efg hijkl}
@@ -25,11 +53,24 @@ describe Interferoman::Interferoman do
   describe :guess do
     before do
       subject.new_game(6)
-      subject.word_list = %w{a b cd ef}
+      subject.word_list = %w{a b cd ef ghi gkl mno}
+    end
+
+    it 'initializes the list to the correct length word list' do
+      subject.guess('__', 6)
+
+      subject.instance_variable_get('@current_game_list').sort.should == %w{cd ef}
+    end
+
+    it 'removes non-matching words from its word list' do
+      subject.guess('___', 6)
+      subject.guess('g__', 6)
+
+      subject.instance_variable_get('@current_game_list').sort.should == %w{ghi gkl}
     end
 
     it 'guesses a letter based on the length of the word' do
-      guess = subject.guess('..', 6)
+      guess = subject.guess('__', 6)
 
       guess.should_not be_nil
       %w{c d e f}.should include(guess)
@@ -47,6 +88,38 @@ describe Interferoman::Interferoman do
       guess = subject.guess('_f', 6)
 
       subject.instance_variable_get('@list')[2].sort.should == %w{cd ef}
+    end
+
+    it 'removes the guess from the list of remaining letters' do
+      guess = subject.guess('__', 6)
+
+      subject.instance_variable_get('@remaining_letters').should_not include(guess)
+    end
+  end
+
+  describe :get_letter_counts do
+    it 'returns an array with the counts of the number of words with each letter in the alphabet' do
+      subject.get_letter_counts(%w{abc ade fgh}).should == [2, 1, 1, 1, 1, 1, 1, 1] + [0]*18
+    end
+  end
+
+  describe :best_guess do
+    before :each do
+      subject.instance_variable_set('@remaining_letters', ('a'..'z').to_a)
+    end
+
+    it 'returns the best letter guess, given an array of letter counts' do
+      subject.best_guess([1, 0, 0, 3, 7, 3] + [0]*19 + [8]).should == 'z'
+    end
+  end
+
+  describe :incorrect_guess do
+    it 'removes words not containing the guess from @current_game_list' do
+      subject.instance_variable_set('@current_game_list', %w{abc dcf ghi ckl mno})
+
+      subject.incorrect_guess('c')
+
+      subject.instance_variable_get('@current_game_list').should == %w{ghi mno}
     end
   end
 end
