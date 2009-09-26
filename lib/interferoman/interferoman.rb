@@ -22,7 +22,7 @@ module Interferoman
     # a new game has started.  The number of guesses the player has left is passed in (default 6),
     # in case you want to keep track of it.
     def new_game(guesses_left)
-      @letters = ('a'..'z').to_a
+      @remaining_letters = ('a'..'z').to_a
       @current_game_list = nil
       @guesses_left = guesses_left
     end
@@ -41,24 +41,35 @@ module Interferoman
         @current_game_list.delete_if{|word| !regex.match(word)}
       end
 
+      counts = get_letter_counts(@current_game_list)
+
+      guess = best_guess(counts)
+
+      @remaining_letters.delete(guess)
+    end
+
+    def get_letter_counts(word_array)
       counts = [0]*26
 
-      @current_game_list.each do |word|
+      word_array.each do |word|
         letters = word.scan(/./).uniq
         letters.each{|l| counts[l[0] - ?a] += 1}
       end
 
+      counts
+    end
+
+    def best_guess(counts)
       guess = ''
       max_count = 0
       counts.each_with_index do |count, i|
         current_letter = (i+?a).chr
-        if @letters.include?(current_letter) && counts[i] > max_count
+        if @remaining_letters.include?(current_letter) && counts[i] > max_count
           max_count = counts[i]
           guess = current_letter
         end
       end
 
-      @letters.delete(guess)
       guess
     end
 
