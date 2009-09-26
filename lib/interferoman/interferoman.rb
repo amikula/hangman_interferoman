@@ -4,8 +4,6 @@ module Interferoman
     # You may initialize you player but the the initialize method must take NO paramters.
     # The player will only be instantiated once, and will play many games.
     def initialize
-      # TODO Remove logging
-      @outfile = File.new('/Users/alf/tmp/hangman', 'a')
     end
 
     # Before starting a game, this method will be called to inform the player of all the possible words that may be
@@ -24,7 +22,6 @@ module Interferoman
     def new_game(guesses_left)
       @remaining_letters = ('a'..'z').to_a
       @current_game_list = nil
-      @guesses_left = guesses_left
     end
 
     # Each turn your player must make a guess.  The word will be a bunch of underscores, one for each letter in the word.
@@ -32,24 +29,27 @@ module Interferoman
     # the word parameter would be "s___s", if you then guess 'o', the next turn it would be "s_o_s", and so on.
     # guesses_left is how many guesses you have left before your player is hung.
     def guess(word, guesses_left)
-      @guesses_left = guesses_left
+      initialize_or_filter_game_list(word)
+
+      @remaining_letters.delete(best_guess(get_letter_counts(@current_game_list)))
+    end
+
+    def initialize_or_filter_game_list(word)
       if @current_game_list.nil?
         @current_game_list = @list[word.length].dup
       else
-        rstring = word.tr('_', '.')
-        regex = Regexp.new("^#{rstring}$")
-        @current_game_list.delete_if{|word| !regex.match(word)}
+        filter_word_list(word)
       end
+    end
 
-      counts = get_letter_counts(@current_game_list)
-
-      guess = best_guess(counts)
-
-      @remaining_letters.delete(guess)
+    def filter_word_list(regexy)
+      rstring = regexy.tr('_', '.')
+      regex = Regexp.new("^#{rstring}$")
+      @current_game_list.delete_if{|word| !regex.match(word)}
     end
 
     def get_letter_counts(word_array)
-      counts = [0]*26
+      counts = [0]*27
 
       word_array.each do |word|
         letters = word.scan(/./).uniq
@@ -60,17 +60,19 @@ module Interferoman
     end
 
     def best_guess(counts)
-      guess = ''
-      max_count = 0
+      guess_index = -1
+
       counts.each_with_index do |count, i|
-        current_letter = (i+?a).chr
-        if @remaining_letters.include?(current_letter) && counts[i] > max_count
-          max_count = counts[i]
-          guess = current_letter
+        if @remaining_letters.include?(index_to_letter(i)) && counts[i] > counts[guess_index]
+          guess_index = i
         end
       end
 
-      guess
+      index_to_letter(guess_index)
+    end
+
+    def index_to_letter(i)
+      current_letter = (i+?a).chr
     end
 
     # notifies you that your last guess was incorrect, and passes your guess back to the method
@@ -84,14 +86,11 @@ module Interferoman
 
     # you lost the game.  The reason is in the reason parameter
     def fail(reason)
-      @guesses_left -= 1
     end
 
     # The result of the game, it'll be one of 'win', 'loss', or 'fail'.
     # The spelled out word will be provided regardless of the result.
     def game_result(result, word)
-      @outfile << "Result: #{result}, guesses left: #{@guesses_left}, word: #{word}\n"
-      @outfile.flush
     end
   end
 end
