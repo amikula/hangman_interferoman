@@ -24,16 +24,6 @@ describe Interferoman::Interferoman do
 
       subject.instance_variable_get('@current_game_list').should be_nil
     end
-
-    it 'initializes @guesses_left to value passed' do
-      subject.instance_variable_set('@guesses_left', nil)
-
-      subject.new_game(6)
-      subject.instance_variable_get('@guesses_left').should == 6
-
-      subject.new_game(10)
-      subject.instance_variable_get('@guesses_left').should == 10
-    end
   end
 
   describe :word_list= do
@@ -98,8 +88,8 @@ describe Interferoman::Interferoman do
   end
 
   describe :get_letter_counts do
-    it 'returns an array with the counts of the number of words with each letter in the alphabet' do
-      subject.get_letter_counts(%w{abc ade fgh}).should == [2, 1, 1, 1, 1, 1, 1, 1] + [0]*18
+    it 'returns an array with the counts of the number of words with each letter in the alphabet plus a placeholder 0 at the end' do
+      subject.get_letter_counts(%w{abc ade fgh}).should == [2, 1, 1, 1, 1, 1, 1, 1] + [0]*19
     end
   end
 
@@ -109,7 +99,7 @@ describe Interferoman::Interferoman do
     end
 
     it 'returns the best letter guess, given an array of letter counts' do
-      subject.best_guess([1, 0, 0, 3, 7, 3] + [0]*19 + [8]).should == 'z'
+      subject.best_guess([1, 0, 0, 3, 7, 3] + [0]*19 + [8] + [0]).should == 'z'
     end
   end
 
