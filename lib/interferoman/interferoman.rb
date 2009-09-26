@@ -1,37 +1,27 @@
+require 'ruby-prof'
+
 module Interferoman
   class Interferoman
-
-    # You may initialize you player but the the initialize method must take NO paramters.
-    # The player will only be instantiated once, and will play many games.
-    def initialize
-    end
-
-    # Before starting a game, this method will be called to inform the player of all the possible words that may be
-    # played.
     def word_list=(list)
       @list = {}
 
       list.each do |word|
-        current_list = (@list[word.length] ||= [])
-        current_list << word
+        (@list[word.length] ||= []) << word
       end
     end
 
-    # a new game has started.  The number of guesses the player has left is passed in (default 6),
-    # in case you want to keep track of it.
-    def new_game(guesses_left)
-      @remaining_letters = ('a'..'z').to_a
+    def new_game(*)
+      @remaining_letters = [true]*26
       @current_game_list = nil
     end
 
-    # Each turn your player must make a guess.  The word will be a bunch of underscores, one for each letter in the word.
-    # after your first turn, correct guesses will appear in the word parameter.  If the word was "shoes" and you guessed "s",
-    # the word parameter would be "s___s", if you then guess 'o', the next turn it would be "s_o_s", and so on.
-    # guesses_left is how many guesses you have left before your player is hung.
-    def guess(word, guesses_left)
+    def guess(word, *)
       initialize_or_filter_game_list(word)
 
-      @remaining_letters.delete(best_guess(get_letter_counts(@current_game_list)))
+      guess = best_guess(get_letter_counts(@current_game_list))
+      @remaining_letters[guess] = false
+
+      (guess+?a).chr
     end
 
     def initialize_or_filter_game_list(word)
@@ -51,46 +41,41 @@ module Interferoman
     def get_letter_counts(word_array)
       counts = [0]*27
 
-      word_array.each do |word|
-        letters = word.scan(/./).uniq
-        letters.each{|l| counts[l[0] - ?a] += 1}
-      end
+      word_array.each{|word| add_letter_counts(counts, word)}
 
-      counts
+      filter_counts(counts)
+    end
+
+    def add_letter_counts(counts, word)
+      letters = word.scan(/./).uniq
+      letters.each{|l| counts[l[0] - ?a] += 1}
+    end
+
+    def filter_counts(counts)
+      counts.each_with_index do |count, i|
+        counts[i] = 0 unless @remaining_letters[i]
+      end
     end
 
     def best_guess(counts)
       guess_index = -1
 
-      counts.each_with_index do |count, i|
-        if @remaining_letters.include?(index_to_letter(i)) && counts[i] > counts[guess_index]
-          guess_index = i
-        end
-      end
+      counts.each_with_index{|count, i| guess_index = i if counts[i] > counts[guess_index]}
 
-      index_to_letter(guess_index)
+      guess_index
     end
 
-    def index_to_letter(i)
-      current_letter = (i+?a).chr
-    end
-
-    # notifies you that your last guess was incorrect, and passes your guess back to the method
     def incorrect_guess(guess)
       @current_game_list.delete_if{|w| w.include?(guess.downcase)}
     end
 
-    # notifies you that your last guess was correct, and passes your guess back to the method
-    def correct_guess(guess)
+    def correct_guess(*)
     end
 
-    # you lost the game.  The reason is in the reason parameter
-    def fail(reason)
+    def fail(*)
     end
 
-    # The result of the game, it'll be one of 'win', 'loss', or 'fail'.
-    # The spelled out word will be provided regardless of the result.
-    def game_result(result, word)
+    def game_result(*)
     end
   end
 end
