@@ -30,9 +30,9 @@ spec = Gem::Specification.new do |s|
   ## spec attributes.
   ##
   ###########################################
-  s.description = "A hangman player"
-  s.author = "Anonymous"
-  s.email = "authors@email.com"
+  s.description = "A well-balanced hangman player"
+  s.author = "Alf Mikula"
+  s.email = "amikula@gmail.com"
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
