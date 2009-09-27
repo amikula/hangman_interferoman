@@ -114,33 +114,4 @@ describe Interferoman::Interferoman do
       subject.instance_variable_get('@current_game_list').should == %w{ghi mno}
     end
   end
-
-  describe :random_select do
-    it 'returns the original array if the size requested is greater than the array size' do
-      subject.random_select(10, %w{a b c}).should == %w{a b c}
-    end
-
-    it 'returns the original array if the size requested is equal than the array size' do
-      subject.random_select(3, %w{a b c}).should == %w{a b c}
-    end
-
-    it 'returns a subset of the array if the size requested is less than the array size' do
-      test_array = %w{a b c d e f g h i j}
-      subset = subject.random_select(5, test_array)
-
-      subset.length.should == 5
-      ((test_array - subset) + subset).sort.should == test_array
-    end
-
-    it 'returns a random subset on every call' do
-      test_array = %w{a b c d e f g h i j}
-      results = []
-
-      100.times do
-        results << subject.random_select(5, test_array)
-      end
-
-      results.uniq.length.should > 50
-    end
-  end
 end
