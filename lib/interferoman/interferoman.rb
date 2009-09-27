@@ -1,5 +1,3 @@
-require 'ruby-prof'
-
 module Interferoman
   class Interferoman
     def word_list=(list)
