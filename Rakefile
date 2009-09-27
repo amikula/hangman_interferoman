@@ -42,7 +42,7 @@ end
 
 desc "Submit your player"
 task :submit do
-  submitter = HangmanTournament::Submit.new(PKG_NAME)
+  submitter = HangmanTournament::Submit.new("hangman_#{PKG_NAME}")
   submitter.submit
 end
 
