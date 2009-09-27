@@ -39,9 +39,22 @@ module Interferoman
     def get_letter_counts(word_array)
       counts = [0]*27
 
-      word_array.each{|word| add_letter_counts(counts, word)}
+      random_select(50, word_array).each{|word| add_letter_counts(counts, word)}
 
       filter_counts(counts)
+    end
+
+    def random_select(size, array)
+      r = array[0...size]
+
+      size.upto(array.length - 1) do |i|
+        pos = rand(i+1)
+        if (pos < size)
+          r[pos] = array[i]
+        end
+      end
+
+      r
     end
 
     def add_letter_counts(counts, word)
