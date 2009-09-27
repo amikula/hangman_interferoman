@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+$:.unshift(File.join(File.dirname(__FILE__), "../lib"))
+require 'rubygems'
+require 'ruby-prof'
+require 'interferoman/interferoman'
+
+def load_word_list
+  File.read(File.join(File.dirname(__FILE__), '../../hangman/hangman/lib/hangman/words')).downcase.split("\n").sort.uniq.freeze
+end
+
+word_list = load_word_list
+
+RubyProf.start
+iman = Interferoman::Interferoman.new
+iman.word_list = word_list
+RubyProf.pause
+
+starttime = Time.now
+100.times do
+  word = word_list[rand(word_list.size)]
+  guesses_left = 6
+  RubyProf.resume
+  iman.new_game(guesses_left)
+  RubyProf.pause
+
+  word_state = '_'*word.length
+
+  while (guesses_left > 0 && word_state.include?('_'))
+    RubyProf.resume
+    guess = iman.guess(word_state)
+    RubyProf.pause
+
+    if word.include?(guess)
+      RubyProf.resume
+      iman.correct_guess(guess)
+      RubyProf.pause
+      cur_byte = 0
+      word.each_byte do |b|
+        if b.chr == guess
+          word_state[cur_byte] = b
+        end
+        cur_byte += 1
+      end
+    else
+      RubyProf.resume
+      iman.incorrect_guess(guess)
+      RubyProf.pause
+      guesses_left -= 1
+    end
+  end
+end
+result = RubyProf.stop
+puts Time.now - starttime
+
+printer = RubyProf::FlatPrinter.new(result)
+printer.print(STDOUT, 0)
