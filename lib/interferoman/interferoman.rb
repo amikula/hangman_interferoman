@@ -31,8 +31,7 @@ module Interferoman
     end
 
     def filter_word_list(regexy)
-      rstring = regexy.tr('_', '.')
-      regex = Regexp.new("^#{rstring}$")
+      regex = Regexp.new("^#{regexy.tr('_', '.')}$")
       @current_game_list.delete_if{|word| !regex.match(word)}
     end
 
